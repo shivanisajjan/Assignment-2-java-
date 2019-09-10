@@ -1,5 +1,4 @@
 package com.stackroute.datamunger.query.parser;
-
 /*There are total 4 DataMungerTest file:
  * 
  * 1)DataMungerTestTask1.java file is for testing following 4 methods
@@ -21,7 +20,11 @@ package com.stackroute.datamunger.query.parser;
  * the test cases together.
  */
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class QueryParser {
+
 
 	private QueryParameter queryParameter = new QueryParameter();
 
@@ -30,7 +33,14 @@ public class QueryParser {
 	 * QueryParameter class
 	 */
 	public QueryParameter parseQuery(String queryString) {
-
+		queryParameter.setFilename(getFileName(queryString));
+		queryParameter.setBaseQuery(getBaseQuery(queryString));
+		queryParameter.setorderby(getOrderByFields(queryString));
+		queryParameter.setGroupby(getGroupByFields(queryString));
+		queryParameter.setFields(getFields(queryString));
+		queryParameter.setLogical(getLogicalOperators(queryString));
+		queryParameter.setAggregate(getAggregateFunctions(queryString));
+		queryParameter.setRestrictions(getConditions(queryString));
 		return queryParameter;
 	}
 
@@ -39,12 +49,30 @@ public class QueryParser {
 	 * "from" clause.
 	 */
 
+	public String getFileName(String queryString) {
+		int flag=0;
+		String string_return="";
+		String str[]= queryString.toLowerCase().split(" ");
+		for(int i=0;i<str.length && flag==0;i++) {
+			if (str[i].equals("from")) {
+				string_return = str[i + 1];
+				flag = 1;
+			}
+		}
+		return string_return;
+	}
+
 	/*
 	 * 
 	 * Extract the baseQuery from the query.This method is used to extract the
 	 * baseQuery from the query string. BaseQuery contains from the beginning of the
 	 * query till the where clause
 	 */
+
+	public String getBaseQuery(String queryString) {
+		String str[]= queryString.toLowerCase().split(" where| order by| group by");
+		return str[0];
+	}
 
 	/*
 	 * extract the order by fields from the query string. Please note that we will
@@ -54,6 +82,23 @@ public class QueryParser {
 	 * "city". Please note that we can have more than one order by fields.
 	 */
 
+
+	public List<String> getOrderByFields(String queryString) {
+		String str[]= queryString.toLowerCase().split("order by ");
+		String string_init[]={};
+		List<String> l=new ArrayList<>();
+		try{
+			string_init=str[1].toLowerCase().split(",");
+			for(int i=0;i<string_init.length;i++){
+				l.add(string_init[i]);
+			}
+		}
+		catch(ArrayIndexOutOfBoundsException e){
+		}
+		return l;
+	}
+
+
 	/*
 	 * Extract the group by fields from the query string. Please note that we will
 	 * need to extract the field(s) after "group by" clause in the query, if at all
@@ -61,6 +106,23 @@ public class QueryParser {
 	 * data/ipl.csv group by city from the query mentioned above, we need to extract
 	 * "city". Please note that we can have more than one group by fields.
 	 */
+
+	public List<String> getGroupByFields(String queryString) {
+		String str[]= queryString.toLowerCase().split("group by ");
+		String string_array[]={};
+		List<String> l=new ArrayList<>();
+		try{
+			String str1[]= str[1].toLowerCase().split(" order by");
+			string_array=str1[0].toLowerCase().split(",");
+			for(int i=0;i<string_array.length;i++){
+				l.add(string_array[i]);
+			}
+		}
+		catch(ArrayIndexOutOfBoundsException e){
+			return null;
+		}
+		return l;
+	}
 
 	/*
 	 * Extract the selected fields from the query string. Please note that we will
@@ -70,6 +132,17 @@ public class QueryParser {
 	 * note that we might have a field containing name "from_date" or "from_hrs".
 	 * Hence, consider this while parsing.
 	 */
+
+	public List<String> getFields(String queryString) {
+		List<String> l=new ArrayList<>();
+		String string_return[]= queryString.toLowerCase().split(" ");
+		String[] string_array=string_return[1].toLowerCase().split(",");;
+		for(int i=0;i<string_array.length;i++){
+			l.add(string_array[i]);
+		}
+		return l;
+	}
+
 
 	/*
 	 * Extract the conditions from the query string(if exists). for each condition,
@@ -86,6 +159,34 @@ public class QueryParser {
 	 * 
 	 */
 
+	public List<Restriction> getConditions(String queryString) {
+		String str[]= queryString.split("where ");
+		String str_get[]={};
+		List<Restriction> l=new ArrayList<>();
+		String[] words = {"<=", ">=", "!=", "<", ">","="};
+		try {
+			String string_temp[] = str[1].split(" group by| order by");
+			str_get = string_temp[0].split(" and | or ");
+			for (int i = 0; i < str_get.length; i++) {
+				for (String word : words) {
+					if (str_get[i].contains(word)) {
+						String str1[] = str_get[i].split(word);
+						if(str1[0].trim().equals("city")){
+							String str2[] = str_get[i].split("'");
+							l.add(new Restriction(str1[0].trim(),str2[1].trim(),word));
+						}
+						else
+						l.add(new Restriction(str1[0].trim(),str1[1].trim(),word));
+					}
+				}
+			}
+		}
+		catch(ArrayIndexOutOfBoundsException e){
+			return null;
+		}
+		return l;
+	}
+
 	/*
 	 * Extract the logical operators(AND/OR) from the query, if at all it is
 	 * present. For eg: select city,winner,team1,team2,player_of_match from
@@ -95,6 +196,27 @@ public class QueryParser {
 	 * The query mentioned above in the example should return a List of Strings
 	 * containing [or,and]
 	 */
+
+
+	public List<String> getLogicalOperators(String queryString) {
+		String str[]= queryString.toLowerCase().split("where ");
+		int flag=1;
+		ArrayList<String>  array_temp = new ArrayList<String>();
+		try{
+			String string_inter[]=str[1].toLowerCase().split(" group by| order by");
+			String string1[] =string_inter[0].toLowerCase().split(" ");
+			for(int i=0;i<string1.length;i++){
+				if(string1[i].equals("and") || string1[i].equals("or")){
+					array_temp.add(string1[i]);
+				}
+			}
+		}
+		catch(ArrayIndexOutOfBoundsException e){
+			return null;
+		}
+		return array_temp;
+	}
+
 
 	/*
 	 * Extract the aggregate functions from the query. The presence of the aggregate
@@ -110,4 +232,24 @@ public class QueryParser {
 	 * 
 	 */
 
+
+	public List<AggregateFunction> getAggregateFunctions(String queryString) {
+		String str[] = queryString.toLowerCase().split("select | from");
+		List<AggregateFunction> aggregating = new ArrayList<AggregateFunction>();
+		String[] words = {"count", "sum", "min", "max", "avg"};
+		String string_sep[] = str[1].toLowerCase().split(",");
+		int flag = 1;
+		for (int i = 0; i < string_sep.length; i++) {
+			boolean isFound = string_sep[i].contains("(");
+			if (isFound) {
+				for (String word : words) {
+					if (string_sep[i].contains(word)) {
+						String str1[] = string_sep[i].toLowerCase().split("\\(|\\)");
+						aggregating.add(new AggregateFunction(str1[1],word));
+					}
+				}
+			}
+		}
+		return aggregating;
+	}
 }

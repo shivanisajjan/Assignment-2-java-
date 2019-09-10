@@ -9,36 +9,75 @@ import java.util.List;
  * */
 
 public class QueryParameter {
+	private String Filename;
+	private String BaseQuery;
+	private List<Restriction> Restrictions;
+	private List<String> logical;
+	private List<String> fields;
+	private List<AggregateFunction> Aggregate;
+	private List<String> groupby;
+	private List<String> orderby;
+
+
+	public void setFilename(String filename) {
+		Filename = filename;
+	}
+	public void setBaseQuery(String baseQuery) {
+		BaseQuery = baseQuery;
+	}
+	public void setRestrictions(List<Restriction> restrictions) {
+		Restrictions = restrictions;
+	}
+	public void setLogical(List<String> logical) {
+		this.logical = logical;
+	}
+	public void setFields(List<String> fields) {
+		this.fields = fields;
+	}
+	public void setAggregate(List<AggregateFunction> aggregate) {
+		Aggregate = aggregate;
+	}
+	public void setGroupby(List<String> groupby) {
+		this.groupby = groupby;
+	}
+	public void setorderby(List<String> orderby) {
+		this.orderby = orderby;
+	}
+
+
+
+
+
 
 	public String getFileName() {
-		return null;
+		return Filename;
 	}
 
 	public String getBaseQuery() {
-		return null;
+		return BaseQuery;
 	}
 
 	public List<Restriction> getRestrictions() {
-		return null;
+		return Restrictions;
 	}
 
 	public List<String> getLogicalOperators() {
-		return null;
+		return logical;
 	}
 
 	public List<String> getFields() {
-		return null;
+		return fields;
 	}
 
 	public List<AggregateFunction> getAggregateFunctions() {
-		return null;
+		return Aggregate;
 	}
 
 	public List<String> getGroupByFields() {
-		return null;
+		return groupby;
 	}
 
 	public List<String> getOrderByFields() {
-		return null;
+		return orderby;
 	}
 }
