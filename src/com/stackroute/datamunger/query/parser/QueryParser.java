@@ -171,8 +171,8 @@ public class QueryParser {
 				for (String word : words) {
 					if (str_get[i].contains(word)) {
 						String str1[] = str_get[i].split(word);
-						if(str1[0].trim().equals("city")){
-							String str2[] = str_get[i].split("'");
+						if(str1[1].contains("'")){
+							String str2[] = str1[1].split("'");
 							l.add(new Restriction(str1[0].trim(),str2[1].trim(),word));
 						}
 						else
